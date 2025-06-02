@@ -2,8 +2,9 @@ name: Validate Model Requirements
 
 on:
   push:
-    paths:
-      - '**.py'
+    branches:
+      - main
+
 
 jobs:
   check_model:
