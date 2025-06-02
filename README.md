@@ -14,8 +14,6 @@
 - ✅ Parameter Count < 20,000
 - ✅ Trained in < 20 Epochs
 
-## 📈 Accuracy Logs
-![Accuracy Graph](./accuracy.png)
 
 ## 🔬 Validation Logs
 
