@@ -1,16 +1,16 @@
-name: Validate Model Requirements
+name: Validate Model
 
 on:
   push:
     branches:
       - main
 
-
 jobs:
-  check_model:
+  validate:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -18,10 +18,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-          pip install torch torchvision
+          pip install -r requirements.txt
 
-      - name: Run Validation Script
+      - name: Run Checks
         run: |
-          python scripts/check_model.py
+          python check_model.py

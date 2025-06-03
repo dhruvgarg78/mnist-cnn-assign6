@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
+from model import Net
 
 # Set seed for reproducibility
 torch.manual_seed(42)
@@ -12,67 +12,24 @@ torch.manual_seed(42)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
-# MNIST transforms
+# Transforms
 transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))
 ])
 
-# Load data
+# Datasets and loaders
 train_dataset = datasets.MNIST('.', train=True, download=True, transform=transform)
 test_dataset = datasets.MNIST('.', train=False, download=True, transform=transform)
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
-# Model with 4 Conv Blocks and Scheduler
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 8, 3, padding=1),
-            nn.BatchNorm2d(8),
-            nn.ReLU()
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(8, 16, 3, padding=1),
-            nn.BatchNorm2d(16),
-            nn.ReLU()
-        )
-        self.pool = nn.MaxPool2d(2, 2)
-
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(16, 32, 3, padding=1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.Dropout(0.1)
-        )
-        self.conv4 = nn.Sequential(
-            nn.Conv2d(32, 16, 3, padding=1),
-            nn.BatchNorm2d(16),
-            nn.ReLU(),
-            nn.Dropout(0.2)
-        )
-        self.gap = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Linear(16, 10)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.pool(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        x = self.gap(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return F.log_softmax(x, dim=1)
-
+# Initialize model
 model = Net().to(device)
-
-# Print parameter count
 params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f"Total Trainable Params: {params}")
 
-# Optimizer, loss, scheduler
+# Optimizer, scheduler, loss
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.5)
 criterion = nn.NLLLoss()
@@ -120,25 +77,28 @@ def test():
     val_accs.append(acc)
     print(f"Val Loss: {avg_loss:.4f}, Accuracy: {acc:.2f}%")
 
-# Training loop
-epochs = 19
-for epoch in range(epochs):
-    print(f"\nEpoch {epoch+1}")
-    train()
-    test()
-    scheduler.step()
+# Run training loop and plot if executed directly
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
 
-# Plot
-plt.figure(figsize=(12, 4))
-plt.subplot(1, 2, 1)
-plt.plot(train_losses, label='Train Loss')
-plt.plot(val_losses, label='Val Loss')
-plt.legend()
-plt.title("Loss over Epochs")
+    epochs = 19
+    for epoch in range(epochs):
+        print(f"\nEpoch {epoch+1}")
+        train()
+        test()
+        scheduler.step()
 
-plt.subplot(1, 2, 2)
-plt.plot(train_accs, label='Train Accuracy')
-plt.plot(val_accs, label='Val Accuracy')
-plt.legend()
-plt.title("Accuracy over Epochs")
-plt.show()
+    # Plot
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(val_losses, label='Val Loss')
+    plt.legend()
+    plt.title("Loss over Epochs")
+
+    plt.subplot(1, 2, 2)
+    plt.plot(train_accs, label='Train Accuracy')
+    plt.plot(val_accs, label='Val Accuracy')
+    plt.legend()
+    plt.title("Accuracy over Epochs")
+    plt.show()

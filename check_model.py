@@ -1,14 +1,8 @@
 import torch
 import torch.nn as nn
-import importlib.util
+from model import Net
 
-def load_model():
-    spec = importlib.util.spec_from_file_location("model", "main.py")
-    model_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(model_module)
-    return model_module.Net()
-
-model = load_model()
+model = Net()
 total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 assert total_params < 20000, f"❌ Too many parameters: {total_params}"
