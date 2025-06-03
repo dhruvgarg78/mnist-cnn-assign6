@@ -6,6 +6,9 @@
 - Highest Val Accuracy: **99.33%**
 - Highest Train Accuracy: **99.46%**
 
+![image](https://github.com/user-attachments/assets/2c58840e-b204-4a71-9cac-f16475d07716)
+
+
 ## ✅ Requirements Used
 - ✅ Batch Normalization
 - ✅ Dropout
